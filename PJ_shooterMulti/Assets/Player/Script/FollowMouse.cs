@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(AimController))]
-public class FollowMouse : MonoBehaviour {
+public class FollowMouse : NetworkBehaviour {
     [SerializeField] GameObject gun;
     [SerializeField] Camera playerCamera;
     [SerializeField] GameObject player;
@@ -23,7 +23,8 @@ public class FollowMouse : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-      
+        if (isLocalPlayer)
+        {
         if (Input.GetAxis("Mouse X") != 0) {
             if (AimController.IsAiming()) {
                 player.transform.Rotate(0, Input.GetAxis("Mouse X") * AIMINGROTATIONSPEED, 0);
@@ -48,6 +49,8 @@ public class FollowMouse : MonoBehaviour {
             }
 
         }
+        }
+
     }
     
 }

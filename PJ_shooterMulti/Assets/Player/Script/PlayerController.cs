@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour
+{
     CharacterController characterController;
     //Rigidbody rigidBody;
-    //[SyncVar]
+    [SyncVar]
     Vector3 Velocity = Vector3.zero;
     public const float INITIALJUMPVELOCITY=10;
     public const float GRAVITYSTRENGHT = -15f;
@@ -27,9 +28,19 @@ public class PlayerController : MonoBehaviour {
     void Start() {
         characterController = GetComponent<CharacterController>();
     }
-    
+    public override void OnStartServer()
+    {
+        playerRespawner = FindObjectOfType<PlayerRespawner>();
+    }
+    public override void OnStartLocalPlayer()
+    {
+        mycam = GetComponentInChildren<Camera>();
+        audioListener = GetComponentInChildren<AudioListener>();
+        mycam.enabled = true;
+        audioListener.enabled = true;
+    }
     void Update() {
-        if ( hasControl) {
+        if ( hasControl && isLocalPlayer) {
             ProcessGravity();
             ProcessMovementInput();
        }
@@ -82,6 +93,30 @@ public class PlayerController : MonoBehaviour {
     public bool IsAlive() {
         return isAlive;
     }
+    [ClientRpc]
+    public void RpcDie()
+    {
+        hasControl = false;
+        characterController.enabled = false;
+        Instantiate(deathParticleSystemObject, gameObject.transform.position, gameObject.transform.rotation);
+        isAlive = false;
+        mesh.SetActive(false);
+        playerRespawner = FindObjectOfType<PlayerRespawner>();
+        if (playerRespawner != null)
+        {
+            playerRespawner.CmdRespawn(gameObject);
+        }
 
-    
+    }
+    [ClientRpc]
+    public void RpcRevive(GameObject spawn)
+    {
+        gameObject.transform.position = spawn.transform.position;
+        gameObject.transform.rotation = spawn.transform.rotation;
+        hasControl = true;
+        characterController.enabled = true;
+        isAlive = true;
+        mesh.SetActive(true);
+    }
+
 }

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Bullet : MonoBehaviour {
+public class Bullet : NetworkBehaviour
+{
 
     Rigidbody rigidBody;
     [SerializeField]float DestroyBulletAfterCollisionTime = 5f;
@@ -36,8 +37,6 @@ public class Bullet : MonoBehaviour {
             if(collision.gameObject != owner) {
                 damagable.DealDamage(owner, bulletDamage);
             }
-         
-            
         } 
         Invoke("DetroyBullet", DestroyBulletAfterCollisionTime);
     }
